@@ -25,6 +25,9 @@ class Person
     @rentals << rental
   end
 
-  private def of_age?
+  private
+
+  def of_age?
     @age >= 18
   end
+  
