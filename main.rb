@@ -4,7 +4,6 @@ require_relative('./student')
 require_relative('./teacher')
 require_relative('./rentals')
 
-# rubocop:disable ClassLength
 class Methods
   def initialize
     @person_array = []
@@ -179,4 +178,3 @@ end
 def main
   App.new
 end
-# rubocop:enable ClassLength
