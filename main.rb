@@ -30,7 +30,7 @@ class Methods
         user_permission = false
       end
       student = Student.new(user_age, user_name, parent_permission: user_permission)
-      @person_array.push(
+    @person_array.push({ 
         output: "[Student] Name: #{student.name}, 
         ID: #{student.id}, 
         Age: #{student.age}", 
