@@ -1,171 +1,163 @@
-require_relative('./books')
-require_relative('./person')
-require_relative('./student')
-require_relative('./teacher')
-require_relative('./rentals')
+require_relative './books'
+require_relative './person'
+require_relative './teacher'
+require_relative './student'
+require_relative './rentals'
 
-class Methods
-  def initialize
-    @person_array = []
-    @books = []
-    @rental_array = []
-  end
-
-  def create_person
-    puts 'Do you want to create a student (1) or a teacher (2)? [Input the number]: '
-    person_option = Integer(gets.chomp)
-    case person_option
-    when 1
-      print 'Age: '
-      user_age = Integer(gets.chomp)
-      print 'Name: '
-      user_name = gets.chomp
-      print 'Has parent permission? [Y/N]: '
-      user_permission = gets.chomp.to_s.upcase
-      case user_permission
-      when 'Y'
-        user_permission = true
-      when 'N'
-        user_permission = false
-      end
-      student = Student.new(user_age, user_name, parent_permission: user_permission)
-      @person_array.push({ output: "[Student] Name: #{student.name}, ID: #{student.id}, Age: #{student.age}",
-                           object: student })
-      puts 'Person created successfully!'
-      puts "\n"
-
-    when 2
-      print 'Age: '
-      user_age = Integer(gets.chomp)
-
-      print 'Name: '
-      user_name = gets.chomp
-
-      print 'Specialization: '
-      user_specialization = gets.chomp
-
-      teacher = Teacher.new(user_age, user_name, user_specialization)
-      @person_array.push({ output: "[Teacher] Name: #{teacher.name}, ID: #{teacher.id}, Age: #{teacher.age}",
-                           object: teacher })
-      puts 'Person created successfully!'
-      puts "\n"
-    else
-      puts 'Person not created.'
+# list all books
+def list_books
+  books = Book.all
+  if books.empty?
+    puts 'No books available. Please add books'
+  else
+    books.each do |book|
+      puts "Title: \"#{book.title}\", Author: #{book.author}"
     end
   end
+end
 
-  def create_book
-    print 'Title: '
-    book_title = gets.chomp
-
-    print 'Author: '
-    book_author = gets.chomp
-
-    puts 'Book created successfully!'
-
-    book = Book.new(book_title, book_author)
-    @books.push({
-                  output: "Title: #{book.title}, Author: #{book.author}",
-                  object: book
-                })
-  end
-
-  def book_list
-    @books.each do |book|
-      puts book[:output]
+# list all people
+def list_people
+  people = Person.all
+  if people.empty?
+    puts 'No person available. Please add  teacher or student'
+  else
+    people.each do |person|
+      puts "[#{person.class}] Name: #{person.name}, ID: #{person.id}, Age: #{person.age}"
     end
   end
+end
 
-  def people_list
-    @person_array.each do |person|
-      puts person[:output]
-    end
+# create a person
+def create_person
+  print 'Do you want to create a student (1) or a teacher (2)? [Input the number]: '
+  option = gets.chomp
+  print 'Age: '
+  age = gets.chomp
+  print 'Name: '
+  name = gets.chomp
+  if option == '1'
+    print 'Has parent permission? [Y/N]: '
+    permission = gets.chomp
+    Student.new(age, name, permission)
+  else
+    print 'Specialization: '
+    specialization = gets.chomp
+    Teacher.new(specialization, age, name)
   end
+  puts 'Person created successfully'
+end
 
-  def create_rental
-    puts 'Select a book from the following list by number: '
-    @books.each_with_index do |book, index|
-      puts "#{index}) #{book[:output]}"
+# create a book
+def create_book
+  print 'Title: '
+  title = gets.chomp
+  print 'Author: '
+  author = gets.chomp
+  Book.new(title, author)
+  puts 'Book created successfully'
+end
+
+def add_rental(date, book_id, person_id)
+  book = Book.all[book_id]
+  person = Person.all[person_id]
+  rental = Rental.new(date, book.title, book.author)
+  person.add_rental(rental)
+end
+
+# create a rental
+def create_rental
+  if Book.all.empty?
+    puts 'No books added yet. Please add books to shelf'
+  elsif Person.all.empty?
+    puts 'No people added yet. Please create a new person'
+  else
+    puts 'Select a book from the following list by number '
+    Book.all.each_with_index do |book, ind|
+      puts "#{ind}) Title: \"#{book.title}\", Author: #{book.author}"
     end
-    book_selected = Integer(gets.chomp)
-    book_chosen = @books[book_selected][:object]
-
-    puts 'Select a person from the following list by number (not id): '
-    @person_array.each_with_index do |person, index|
-      puts "#{index}) #{person[:output]}"
+    book_id = gets.chomp.to_i
+    puts 'Select a person from the following list by number (not id) '
+    Person.all.each_with_index do |person, ind|
+      puts "#{ind}) [#{person.class}] Name: #{person.name}, ID: #{person.id}, Age: #{person.age}"
     end
-    person_selected = Integer(gets.chomp)
-    person_chosen = @person_array[person_selected][:object]
-
+    person_id = gets.chomp.to_i
     print 'Date: '
-    rental_date = gets.chomp
-
-    @rental_array.push(Rental.new(rental_date, book_chosen, person_chosen))
+    date = gets.chomp
+    add_rental(date, book_id, person_id)
+    puts 'Rental created successfully'
   end
+end
 
-  def rental_list
-    print 'ID of person: '
-    person_id = Integer(gets.chomp)
-    puts 'Rental: '
-
-    @rental_array.each do |rental|
-      if person_id == rental.person.id
-        puts "Date: #{rental.date}, Book: \"#{rental.book.title}\" by #{rental.book.author}"
-      else
-        puts 'ID does not exist'
-      end
+# list all rentals for a given person ID
+def list_rental
+  print 'ID of person: '
+  id = gets.chomp
+  puts 'Rentals: '
+  rentals = Person.all.find_all { |person| person.id == id.to_i }
+  rentals.each do |rental|
+    rental.rentals.each do |rent|
+      puts "Date: #{rent.date}, Book: \"#{rent.book}\" by #{rent.person}"
     end
   end
 end
 
-class App
-  def self.home_page
-    puts 'Welcome to the OOP School Library App!'
-    puts "\n"
-    puts 'Please choose an option by entering a number: '
+# display welcome message
+def welcome
+  puts 'Welcome to School Library App!'
+end
 
-    @content = {
-      '1' => 'List all books',
-      '2' => 'List all people',
-      '3' => 'Create a person',
-      '4' => 'Create a book',
-      '5' => 'Create a rental',
-      '6' => 'List all rentals for a given person id',
-      '7' => 'Exit'
-    }
+# display a list of options
+def choose
+  puts 'Please choose an option by entering a number: ',
+       '1 - List all books',
+       '2 - List all people',
+       '3 - Create a person',
+       '4 - Create a book',
+       '5 - Create a rental',
+       '6 - List all of rentals for a given person id',
+       '7 - Exit'
+end
 
-    @content.each do |index, string|
-      puts "#{index} - #{string}"
-    end
-
-    Integer(gets.chomp)
-  end
-
-  method = Methods.new
-
-  loop do
-    case home_page
-    when 1
-      method.book_list
-    when 2
-      method.people_list
-    when 3
-      method.create_person
-    when 4
-      method.create_book
-    when 5
-      method.create_rental
-    when 6
-      method.rental_list
-    when 7
-      puts 'Thank you for using the app!'
-      exit
-    else
-      puts 'Choose a number between 1 to 7'
-    end
+def list(entity)
+  if entity == 'books'
+    list_books
+  else
+    list_people
   end
 end
 
+def select_option(num)
+  case num
+  when '1'
+    list('books')
+  when '2'
+    list('people')
+  when '3'
+    create_person
+  when '4'
+    create_book
+  when '5'
+    create_rental
+  when '6'
+    list_rental
+  else
+    puts 'Oooopss!! it seems you selected a wrong option. Please try again'
+  end
+end
+
+# define the entry point method
 def main
-  App.new
+  2.times { |_n| puts '' }
+  choose
+  num = gets.chomp
+  if num == '7'
+    puts 'Thank you for using our service :). We hope to get your feedback soon'
+    return
+  end
+  select_option(num)
+  main
 end
+
+welcome
+main

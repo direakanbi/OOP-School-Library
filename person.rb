@@ -1,33 +1,41 @@
-require_relative('./correcter')
+require_relative './correcter'
 
 class Person
-  attr_accessor :name, :age, :rentals
-  attr_reader :id
+  attr_accessor :name, :age
+  attr_reader :id, :rentals
 
   def initialize(age, name = 'Unknown', parent_permission: true)
-    @id = Random.rand(1..1000)
+    @id = Random.rand(1..500)
     @name = name
     @age = age
     @parent_permission = parent_permission
-    @corrector = Correcter.new
+    @corrector = Corrector.new
     @rentals = []
   end
 
-  def add_rental(book, date)
-    Rental.new(date, self, book)
-  end
-
   def can_use_services?
-    @age > 18 || @parent_permission == true
+    of_age? || @parent_permission
   end
 
-  def validate_name
-    @name = @corrector.correct_name(@name)
+  def validate_name(name)
+    @corrector.correct_name(name)
+  end
+
+  def add_rental(rental)
+    @rentals << rental
+  end
+
+  def self.all
+    subclasses = []
+    ObjectSpace.each_object(Person) do |sub|
+      subclasses << sub
+    end
+    subclasses
   end
 
   private
 
   def of_age?
-    @age > 18
+    @age.to_i >= 18
   end
 end

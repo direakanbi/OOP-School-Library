@@ -1,5 +1,6 @@
 class Book
-  attr_accessor :title, :author, :rentals
+  attr_accessor :title, :author
+  attr_reader :rentals
 
   def initialize(title, author)
     @title = title
@@ -7,7 +8,13 @@ class Book
     @rentals = []
   end
 
-  def add_rental(person, date)
-    Rental.new(date, self, person)
+  def add_rental(rental)
+    @rentals << rental
+  end
+
+  def self.all
+    books = []
+    ObjectSpace.each_object(Book) { |book| books << book }
+    books
   end
 end

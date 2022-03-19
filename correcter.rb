@@ -1,5 +1,5 @@
-class Correcter
+class Corrector
   def correct_name(name)
-    name.capitalize.slice(0, 10)
+    name.gsub(name[0], name[0].upcase)[0, 10]
   end
 end
