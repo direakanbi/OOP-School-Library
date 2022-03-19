@@ -1,8 +1,9 @@
+require 'date'
+
 class Rental
   attr_accessor :date
-  attr_reader :person, :book
 
-  def initialize(date, book, person)
+  def initialize(person, book, date = DateTime.now())
     @date = date
 
     @person = person
